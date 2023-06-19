@@ -13,4 +13,8 @@ UCLASS()
 class WISHSTRAY_API UBengalGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AActor> MasterFieldActorClass;
 };
