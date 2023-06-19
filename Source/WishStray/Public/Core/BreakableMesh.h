@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GeometryCollection/GeometryCollectionObject.h"
+#include "Chaos/ChaosGameplayEventDispatcher.h"
 #include "BreakableMesh.generated.h"
 
 class UGeometryCollectionComponent;
@@ -18,6 +19,8 @@ public:
 	ABreakableMesh();
 
 	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaSeconds) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMesh* NormalMesh;
@@ -41,7 +44,13 @@ private:
 	UFUNCTION(BlueprintCallable)
 	void OnMeshHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
+	UFUNCTION()
+	void OnMeshBreaks(const FChaosBreakEvent& BreakEvent);
+
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
+	UFUNCTION(BlueprintCallable, CallInEditor)
+	void PrintFirstTransform();
 #endif
 };
