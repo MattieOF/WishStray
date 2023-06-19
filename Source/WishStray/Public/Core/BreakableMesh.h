@@ -39,6 +39,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UGeometryCollectionComponent* GeoCollection;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* BreakSound;
 
 private:
 	UFUNCTION(BlueprintCallable)

@@ -5,6 +5,7 @@
 #include "WishStray.h"
 #include "Core/BengalGameInstance.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ABreakableMesh::ABreakableMesh()
 {
@@ -82,9 +83,15 @@ void ABreakableMesh::OnMeshHit(UPrimitiveComponent* HitComponent, AActor* OtherA
 
 void ABreakableMesh::OnMeshBreaks(const FChaosBreakEvent& BreakEvent)
 {
+	if (BreakSound)
+	{	
+		const auto& Transform = GeoCollection->GetTransformArray()[0];
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), BreakSound, GetActorLocation() + Transform.GetLocation(), GetActorRotation() + Transform.Rotator());
+	}
+	
 	GeoCollection->SetVisibility(true);
 	Mesh->DestroyComponent();
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = false; 
 }
 
 #if WITH_EDITOR
