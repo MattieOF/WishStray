@@ -34,14 +34,14 @@ void ABengalController::OnHorizontalMovement(float Value)
 
 void ABengalController::OnVerticalLook(float Value)
 {
-	// Cast<ABengalCharacter>(GetPawn())->AddCameraInput(Value, 0);
-	GetPawn()->AddControllerPitchInput(Value);
+	Cast<ABengalCharacter>(GetPawn())->AddCameraInput(Value, 0);
+	// GetPawn()->AddControllerPitchInput(Value);
 }
 
 void ABengalController::OnHorizontalLook(float Value)
 {
-	// Cast<ABengalCharacter>(GetPawn())->AddCameraInput(0, Value);
-	GetPawn()->AddControllerYawInput(Value);
+	Cast<ABengalCharacter>(GetPawn())->AddCameraInput(0, Value);
+	// GetPawn()->AddControllerYawInput(Value);
 }
 
 void ABengalController::OnBeginJump()

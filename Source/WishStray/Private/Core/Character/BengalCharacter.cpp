@@ -17,7 +17,11 @@ ABengalCharacter::ABengalCharacter()
 
 void ABengalCharacter::AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce)
 {
-	FVector FinalDir = WorldDirection * ScaleValue * Speed;
+	FRotator Forward = Camera->GetComponentRotation();
+	Forward.Pitch = 0;
+	Forward.Roll = 0;
+
+	const FVector FinalDir = Forward.RotateVector(WorldDirection) * ScaleValue * Speed;
 	if (UPawnMovementComponent* MovementComponent = GetMovementComponent())
 	{
 		MovementComponent->AddInputVector(FinalDir, bForce);
@@ -31,7 +35,8 @@ void ABengalCharacter::AddMovementInput(FVector WorldDirection, float ScaleValue
 void ABengalCharacter::AddCameraInput(float Vertical, float Horizontal)
 {
 	FRotator Rot = CameraBoom->GetRelativeRotation();
-	Rot.Pitch = FMath::ClampAngle(Rot.Pitch + Vertical * GetWorld()->DeltaRealTimeSeconds * 100, -179, 179);
+	Rot.Pitch = FMath::Clamp(Rot.Pitch + Vertical * GetWorld()->DeltaRealTimeSeconds * 100, -89, 89);
 	Rot.Yaw += Horizontal * GetWorld()->DeltaRealTimeSeconds * 100;
+	Rot.Roll = 0;
 	CameraBoom->SetRelativeRotation(Rot);
 }
