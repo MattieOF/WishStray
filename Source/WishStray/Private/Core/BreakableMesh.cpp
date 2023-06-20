@@ -30,7 +30,8 @@ void ABreakableMesh::BeginPlay()
 	if (GeometryCollection)
 	{
 		GeoCollection->SetRestCollection(GeometryCollection);
-		GeoCollection->DamageThreshold[0] = Strength * 1000000;
+		for (int i = 0; i < GeoCollection->DamageThreshold.Num(); i++)
+			GeoCollection->DamageThreshold[i] = Strength * 1000000;
 	}
 	else
 		UE_LOG(LogBengal, Error, TEXT("In %s, null geo collection!"), *GetDebugName(this));
@@ -120,6 +121,11 @@ void ABreakableMesh::PostEditChangeProperty(FPropertyChangedEvent& PropertyChang
 		}
 		GeoCollection->OnActorEnableCollisionChanged();
 	}
+
+	if (!NormalMesh && GeometryCollection)
+		GeoCollection->SetVisibility(true);
+	else
+		GeoCollection->SetVisibility(false);
 	
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
