@@ -7,6 +7,7 @@
 #endif
 
 #include "EngineUtils.h"
+#include "Components/SplineComponent.h"
 #include "Engine/PostProcessVolume.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -158,4 +159,29 @@ bool UBengalStatics::InActualGame()
 #else
 	return true;
 #endif
+}
+
+bool UBengalStatics::CheckForCollisionsAlongSpline(USplineComponent* Spline, ECollisionChannel Channel, const TArray<AActor*>& IgnoredActors, int Resolution)
+{
+	static const FCollisionShape Shape = FCollisionShape::MakeSphere(2);
+	const UWorld* World = Spline->GetWorld();
+	
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActors(IgnoredActors);
+	
+	for (float Dist = 0; Dist < Spline->GetSplineLength(); Dist++)
+	{
+		FVector Loc = Spline->GetLocationAtDistanceAlongSpline(Dist, ESplineCoordinateSpace::World);
+		if (World->OverlapBlockingTestByChannel(Loc, FQuat::Identity, Channel, Shape, QueryParams))
+		{
+			DrawDebugSphere(World, Loc, 12, 6, FColor::Red, false, 2, 0, 3);
+			return true;
+		}
+		else
+			DrawDebugSphere(World, Loc, 12, 6, FColor::Green, false, 2, 0, 3);
+
+		Dist += Resolution;
+	}
+
+	return false;
 }

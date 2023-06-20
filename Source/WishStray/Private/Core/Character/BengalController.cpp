@@ -4,6 +4,7 @@
 #include "Core/Character/BengalController.h"
 
 #include "WishStray.h"
+#include "Components/SplineComponent.h"
 #include "Core/BengalStatics.h"
 #include "Core/Character/BengalCharacter.h"
 #include "Visual/PawPrint.h"
@@ -11,6 +12,8 @@
 ABengalController::ABengalController()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	Spline = CreateDefaultSubobject<USplineComponent>(TEXT("Jumping Spline"));
 }
 
 void ABengalController::BeginPlay()
@@ -58,7 +61,7 @@ void ABengalController::Tick(float DeltaSeconds)
 		FVector JumpToLocation;
 		if (GetJumpToLocation(JumpToLocation))
 		{
-			PawPrint->SetActorLocation(JumpToLocation + FVector(0, 0, 6));
+			PawPrint->SetActorLocation(JumpToLocation + FVector(0, 0, 6), false, nullptr, ETeleportType::TeleportPhysics);
 			PawPrint->SetActorRotation(FRotator(0, (JumpToLocation - Bengal->GetActorLocation()).GetSafeNormal().Rotation().Yaw + 90, 0));	
 		}
 	}
@@ -140,7 +143,37 @@ void ABengalController::OnEndJump()
 	
 	FVector JumpToLocation;
 	if (GetJumpToLocation(JumpToLocation))
-		GetPawn()->SetActorLocation(JumpToLocation + UBengalStatics::GetZUnderOrigin(GetPawn()) + FVector(0, 0, 10));
+	{
+		const FVector StartPos = GetPawn()->GetActorLocation();
+		const FVector EndPos = JumpToLocation + FVector(0, 0, UBengalStatics::GetZUnderOrigin(GetPawn()) + 5);
+		
+		// Generate path
+		Spline->ClearSplinePoints();
+		Spline->AddSplinePoint(StartPos, ESplineCoordinateSpace::World);
+		Spline->AddSplinePoint(EndPos, ESplineCoordinateSpace::World);
+
+		FVector Dir = (EndPos - StartPos).GetSafeNormal() * 150;
+		FVector ReverseDir = -Dir;
+		Spline->SetTangentAtSplinePoint(0, Dir, ESplineCoordinateSpace::World);
+		Spline->SetTangentAtSplinePoint(1, ReverseDir, ESplineCoordinateSpace::World);
+		int Tries = 5;
+
+		TArray<AActor*> Ignored;
+		Ignored.Add(GetPawn());
+		while (Tries > 0 && UBengalStatics::CheckForCollisionsAlongSpline(Spline, ECC_WorldStatic, Ignored))
+		{
+			Tries--;
+
+			Dir = FVector(Dir.X * 1.3, Dir.Y * 1.3, (Dir.Z + 15) * 2);
+			Spline->SetTangentAtSplinePoint(0, Dir, ESplineCoordinateSpace::World);
+			ReverseDir = Spline->GetTangentAtSplinePoint(0, ESplineCoordinateSpace::World);
+			ReverseDir.Z = -ReverseDir.Z;
+			Spline->SetTangentAtSplinePoint(1, ReverseDir, ESplineCoordinateSpace::World);
+		}
+
+		if (Tries <= 0)
+			UE_LOG(LogBengal, Log, TEXT("Used all tries"));
+	}
 }
 
 bool ABengalController::GetJumpToLocation(FVector& OutPos)

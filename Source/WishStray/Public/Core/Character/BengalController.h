@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "BengalController.generated.h"
 
+class USplineComponent;
 class APawPrint;
 
 UCLASS()
@@ -45,4 +46,7 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite)
 	FVector JumpPosOffset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USplineComponent* Spline;
 };

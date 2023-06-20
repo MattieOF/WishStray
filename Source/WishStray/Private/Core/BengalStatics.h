@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "BengalStatics.generated.h"
 
+class USplineComponent;
 /**
  * Utility functions for Wish Stray
  */
@@ -173,4 +174,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static FORCEINLINE FRotator RotatorFromVector(FVector V) { return V.ToOrientationRotator(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static bool CheckForCollisionsAlongSpline(USplineComponent* Spline, ECollisionChannel Channel, const TArray<AActor*>& IgnoredActors, int Resolution = 15);
 };
