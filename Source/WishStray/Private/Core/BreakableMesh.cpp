@@ -27,8 +27,11 @@ void ABreakableMesh::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (GeoCollection)
+	if (GeometryCollection)
+	{
 		GeoCollection->SetRestCollection(GeometryCollection);
+		GeoCollection->DamageThreshold[0] = Strength * 1000000;
+	}
 	else
 		UE_LOG(LogBengal, Error, TEXT("In %s, null geo collection!"), *GetDebugName(this));
 	
@@ -90,8 +93,10 @@ void ABreakableMesh::OnMeshBreaks(const FChaosBreakEvent& BreakEvent)
 	}
 	
 	GeoCollection->SetVisibility(true);
+	
 	if (Mesh)
 		Mesh->DestroyComponent();
+	
 	PrimaryActorTick.bCanEverTick = false; 
 }
 
@@ -102,6 +107,19 @@ void ABreakableMesh::PostEditChangeProperty(FPropertyChangedEvent& PropertyChang
 		Mesh->SetStaticMesh(NormalMesh);
 	else if (PropertyChangedEvent.Property->GetName() == "GeometryCollection")
 		GeoCollection->SetRestCollection(GeometryCollection);
+	else if (PropertyChangedEvent.Property->GetName() == "CollisionEnabledOnDebris")
+	{
+		if (CollisionEnabledOnDebris)
+		{
+			GeoCollection->SetCollisionObjectType(ECC_Destructible);
+			GeoCollection->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		} else
+		{
+			GeoCollection->SetCollisionObjectType(ECC_GameTraceChannel1);
+			GeoCollection->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		}
+		GeoCollection->OnActorEnableCollisionChanged();
+	}
 	
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }

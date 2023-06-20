@@ -2,7 +2,9 @@
 
 #include "Core/Character/BengalCharacter.h"
 
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 ABengalCharacter::ABengalCharacter()
 {
@@ -13,6 +15,19 @@ ABengalCharacter::ABengalCharacter()
 	CameraBoom->SetupAttachment(reinterpret_cast<USceneComponent*>(GetCapsuleComponent()));
 	CameraBoom->bUsePawnControlRotation = true;
 	Camera->SetupAttachment(CameraBoom);
+}
+
+void ABengalCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (GetCharacterMovement()->GetCurrentAcceleration().SizeSquared() > KINDA_SMALL_NUMBER)
+	{
+		GetMesh()->SetWorldRotation(UKismetMathLibrary::RInterpTo_Constant(
+			GetMesh()->GetComponentRotation(),
+			FRotator(0, GetCharacterMovement()->GetCurrentAcceleration().GetSafeNormal().Rotation().Yaw - 90, 0),
+			DeltaSeconds, 360));
+	}
 }
 
 void ABengalCharacter::AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce)

@@ -17,6 +17,8 @@ public:
 	// Sets default values for this pawn's properties
 	ABengalCharacter();
 
+	virtual void Tick(float DeltaSeconds) override;
+
 	virtual void AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce) override;
 	
 	UFUNCTION(BlueprintCallable)

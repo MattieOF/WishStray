@@ -15,6 +15,8 @@ public:
 	// Sets default values for this actor's properties
 	ABengalController();
 
+	virtual void Tick(float DeltaSeconds) override;
+
 	virtual void SetupInputComponent() override;
 
 	void OnVerticalMovement(float Value);
@@ -28,4 +30,7 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	bool bChargingJump = false;
+
+	UPROPERTY(BlueprintReadOnly)
+	float JumpCharge = 0;
 };

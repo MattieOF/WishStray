@@ -43,6 +43,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USoundBase* BreakSound;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Strength = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool CollisionEnabledOnDebris = true;
+
 private:
 	UFUNCTION(BlueprintCallable)
 	void OnMeshHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

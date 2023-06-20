@@ -3,11 +3,44 @@
 
 #include "Core/Character/BengalController.h"
 
+#include "WishStray.h"
 #include "Core/Character/BengalCharacter.h"
 
 ABengalController::ABengalController()
 {
 	PrimaryActorTick.bCanEverTick = true;
+}
+
+void ABengalController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (bChargingJump)
+	{
+		if (JumpCharge < 1)
+			JumpCharge = FMath::Min(JumpCharge + DeltaSeconds, 1);
+		
+		// Recalculate jump
+		ABengalCharacter* Bengal = Cast<ABengalCharacter>(GetPawn());
+		if (!Bengal)
+		{
+			UE_LOG(LogBengal, Error, TEXT("What the fuck!! bengal is null"));
+			return;
+		}
+
+		FVector Forward = Bengal->CameraBoom->GetForwardVector();
+		FVector EndLoc = Bengal->GetActorLocation() + Forward * FMath::InterpEaseOut(100, 1500, JumpCharge, 4);
+		FHitResult Hit;
+		FCollisionQueryParams QueryParams = FCollisionQueryParams::DefaultQueryParam;
+		QueryParams.AddIgnoredActor(Bengal);
+		if (GetWorld()->LineTraceSingleByChannel(Hit, Bengal->GetActorLocation(), EndLoc, ECC_WorldStatic, QueryParams))
+		{
+			
+		}
+		DrawDebugLine(GetWorld(), Bengal->GetActorLocation(), EndLoc, FColor::Red, false, DeltaSeconds, 0, 5);
+	}
+	else
+		JumpCharge = 0;
 }
 
 void ABengalController::SetupInputComponent()
