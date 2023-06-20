@@ -1,24 +1,55 @@
 ﻿// copyright lololol
+// ReSharper disable CppMemberFunctionMayBeConst
 
 #include "Core/Character/BengalController.h"
 
-// Sets default values
+#include "Core/Character/BengalCharacter.h"
+
 ABengalController::ABengalController()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-// Called when the game starts or when spawned
-void ABengalController::BeginPlay()
+void ABengalController::SetupInputComponent()
 {
-	Super::BeginPlay();
-	
+	Super::SetupInputComponent();
+
+	InputComponent->BindAxis("VerticalMove", this, &ABengalController::OnVerticalMovement);
+	InputComponent->BindAxis("HorizontalMove", this, &ABengalController::OnHorizontalMovement);
+	InputComponent->BindAxis("VerticalLook", this, &ABengalController::OnVerticalLook);
+	InputComponent->BindAxis("HorizontalLook", this, &ABengalController::OnHorizontalLook);
+	InputComponent->BindAction("Jump", IE_Pressed, this, &ABengalController::OnBeginJump);
+	InputComponent->BindAction("Jump", IE_Released, this, &ABengalController::OnEndJump);
 }
 
-// Called every frame
-void ABengalController::Tick(float DeltaTime)
+void ABengalController::OnVerticalMovement(float Value)
 {
-	Super::Tick(DeltaTime);
+	GetPawn()->AddMovementInput(FVector::ForwardVector, Value);
 }
 
+void ABengalController::OnHorizontalMovement(float Value)
+{
+	GetPawn()->AddMovementInput(FVector::RightVector, Value);
+}
+
+void ABengalController::OnVerticalLook(float Value)
+{
+	// Cast<ABengalCharacter>(GetPawn())->AddCameraInput(Value, 0);
+	GetPawn()->AddControllerPitchInput(Value);
+}
+
+void ABengalController::OnHorizontalLook(float Value)
+{
+	// Cast<ABengalCharacter>(GetPawn())->AddCameraInput(0, Value);
+	GetPawn()->AddControllerYawInput(Value);
+}
+
+void ABengalController::OnBeginJump()
+{
+	bChargingJump = true;
+}
+
+void ABengalController::OnEndJump()
+{
+	bChargingJump = false;
+}
