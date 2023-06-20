@@ -15,11 +15,17 @@ public:
 	// Sets default values for this actor's properties
 	ABengalController();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
 
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	void OnVerticalMovement(float Value);
+	void OnHorizontalMovement(float Value);
+	void OnVerticalLook(float Value);
+	void OnHorizontalLook(float Value);
+
+	void OnBeginJump();
+	void OnEndJump();
+
+protected:
+	UPROPERTY(BlueprintReadOnly)
+	bool bChargingJump = false;
 };

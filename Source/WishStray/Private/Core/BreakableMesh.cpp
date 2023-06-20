@@ -90,7 +90,8 @@ void ABreakableMesh::OnMeshBreaks(const FChaosBreakEvent& BreakEvent)
 	}
 	
 	GeoCollection->SetVisibility(true);
-	Mesh->DestroyComponent();
+	if (Mesh)
+		Mesh->DestroyComponent();
 	PrimaryActorTick.bCanEverTick = false; 
 }
 
