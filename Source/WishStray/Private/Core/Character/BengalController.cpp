@@ -4,6 +4,7 @@
 #include "Core/Character/BengalController.h"
 
 #include "WishStray.h"
+#include "Components/InputComponent.h"
 #include "Components/SplineComponent.h"
 #include "Core/BengalStatics.h"
 #include "Core/Character/BengalCharacter.h"
@@ -62,7 +63,8 @@ void ABengalController::Tick(float DeltaSeconds)
 		if (GetJumpToLocation(JumpToLocation))
 		{
 			PawPrint->SetActorLocation(JumpToLocation + FVector(0, 0, 6), false, nullptr, ETeleportType::TeleportPhysics);
-			PawPrint->SetActorRotation(FRotator(0, (JumpToLocation - Bengal->GetActorLocation()).GetSafeNormal().Rotation().Yaw + 90, 0));	
+			PawPrint->SetActorRotation(FRotator(0, (JumpToLocation - Bengal->GetActorLocation()).GetSafeNormal().Rotation().Yaw + 90, 0));
+			Bengal->GetMesh()->SetRelativeRotation(FRotator(0, (JumpToLocation - Bengal->GetMesh()->GetComponentLocation()).GetSafeNormal().Rotation().Yaw - 90, 0));
 		}
 	}
 	else
@@ -73,10 +75,12 @@ void ABengalController::Tick(float DeltaSeconds)
 		if (JumpProgress >= Spline->Duration)
 		{
 			bJumping = false;
-			FRotator Rot = Cast<ABengalCharacter>(GetPawn())->GetMesh()->GetComponentRotation();
+			const ABengalCharacter* Bengal = Cast<ABengalCharacter>(GetPawn());
+			FRotator Rot = Bengal->GetMesh()->GetComponentRotation();
 			Rot.Roll = 0;
 			Rot.Pitch = 0;
-			Cast<ABengalCharacter>(GetPawn())->GetMesh()->SetWorldRotation(Rot);
+			Bengal->GetMesh()->SetWorldRotation(Rot);
+			Bengal->GetMesh()->SetPhysicsLinearVelocity(FVector::ZeroVector);
 			GetPawn()->SetActorEnableCollision(true);
 		} else
 		{
@@ -122,7 +126,7 @@ void ABengalController::OnHorizontalMovement(float Value)
 	{
 		FVector Right = Cast<ABengalCharacter>(GetPawn())->CameraBoom->GetRightVector();
 		Right.Z = 0;
-		JumpPosOffset += (Right.GetSafeNormal() * GetWorld()->DeltaRealTimeSeconds * Value * 1000);
+		JumpPosOffset += (Right.GetSafeNormal() * static_cast<double>(GetWorld()->DeltaRealTimeSeconds) * Value * 1000);
 		JumpPosOffset = JumpPosOffset.GetClampedToMaxSize(700);
 	}
 	else if (!bJumping)
@@ -144,7 +148,7 @@ void ABengalController::OnHorizontalLook(float Value)
 void ABengalController::OnScroll(float Value)
 {
 	USpringArmComponent* Boom = Cast<ABengalCharacter>(GetPawn())->CameraBoom;
-	Boom->TargetArmLength = FMath::Clamp(Boom->TargetArmLength + Value * 100, 300, 1500);
+	Boom->TargetArmLength = FMath::Clamp(Boom->TargetArmLength + Value * 100, 300.0f, 1500.0f);
 }
 
 void ABengalController::OnBeginJump()
@@ -169,7 +173,8 @@ void ABengalController::OnEndJump()
 		return;
 	
 	FVector JumpToLocation;
-	if (GetJumpToLocation(JumpToLocation))
+	bHasJumpLocation = GetJumpToLocation(JumpToLocation);
+	if (bHasJumpLocation)
 	{
 		const FVector StartPos = GetPawn()->GetActorLocation();
 		const FVector EndPos = JumpToLocation + FVector(0, 0, UBengalStatics::GetZUnderOrigin(GetPawn()) + 5);
@@ -216,14 +221,13 @@ bool ABengalController::GetJumpToLocation(FVector& OutPos)
 	FHitResult Hit;
 	FCollisionQueryParams QueryParams = FCollisionQueryParams::DefaultQueryParam;
 	QueryParams.AddIgnoredActor(Bengal);
-	GetWorld()->LineTraceSingleByChannel(Hit, Bengal->GetActorLocation() + JumpPosOffset + FVector(0, 0, 1000),
+	bool DidHit = GetWorld()->LineTraceSingleByChannel(Hit, Bengal->GetActorLocation() + JumpPosOffset + FVector(0, 0, 1000),
 										 Bengal->GetActorLocation() + JumpPosOffset + FVector(0, 0, -10000),
-										 ECC_WorldStatic, QueryParams);
-	if (Hit.ImpactPoint.Z > Bengal->GetActorLocation().Z + FMath::GetMappedRangeValueClamped(FVector2D(0, 700), FVector2D(800, 400), JumpPosOffset.Length()))
-	{
-		// Out of range!
+										 ECC_WALKABLE, QueryParams);
+	if (!DidHit)
 		return false;
-	}
+	else if (Hit.ImpactPoint.Z > Bengal->GetActorLocation().Z + FMath::GetMappedRangeValueClamped(FVector2D(0, 700), FVector2D(800, 400), JumpPosOffset.Length()))
+		return false;
 	else
 	{
 		OutPos = Hit.ImpactPoint;

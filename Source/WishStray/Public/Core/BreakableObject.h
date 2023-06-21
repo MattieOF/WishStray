@@ -25,6 +25,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Break();
 
+	UFUNCTION()
 	void OnMeshHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	
 #if WITH_EDITOR
@@ -51,4 +52,16 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bHasBroken = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bStartStatic = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bDebrisHaveCollision = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BreakAfterDistanceFallen = 1000000;
+
+private:
+	float LastZPosition;
 };

@@ -42,6 +42,9 @@ protected:
 	bool bJumping = false;
 
 	UPROPERTY(BlueprintReadOnly)
+	bool bHasJumpLocation = false;
+
+	UPROPERTY(BlueprintReadOnly)
 	float JumpProgress = 0;
 
 	UPROPERTY(BlueprintReadOnly)

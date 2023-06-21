@@ -2,6 +2,7 @@
 
 #include "Core/BreakableObject.h"
 
+#include "WishStray.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -19,8 +20,13 @@ void ABreakableObject::BeginPlay()
 
 	if (Mesh)
 		MeshComp->SetStaticMesh(Mesh);
-
-	MeshComp->OnComponentHit.AddDynamic(this, &ABreakableObject::OnMeshHit);
+	MeshComp->SetUseCCD(!bStartStatic);
+	MeshComp->SetSimulatePhysics(!bStartStatic);
+	LastZPosition = MeshComp->GetComponentLocation().Z;
+	
+	FScriptDelegate MeshHitDelegate;
+	MeshHitDelegate.BindUFunction(this, "OnMeshHit");
+	MeshComp->OnComponentHit.Add(MeshHitDelegate); // BindDynamic causes breakpoint?
 }
 
 void ABreakableObject::Break()
@@ -46,16 +52,26 @@ void ABreakableObject::Break()
 void ABreakableObject::OnMeshHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (HitComponent->GetComponentVelocity().Length() >= BreakSpeed || OtherComp->GetComponentVelocity().Length() >= BreakSpeed)
+	if (abs(LastZPosition - HitComponent->GetComponentLocation().Z) >= BreakAfterDistanceFallen
+		|| (HitComponent->HasValidPhysicsState() && HitComponent->GetComponentVelocity().Length() >= BreakSpeed)
+		|| (OtherComp && OtherComp->GetComponentVelocity().Length() >= BreakSpeed))
+	{
+		UE_LOG(LogBengal, Log, TEXT("Breakable object broken: this velocity: %f, collider velocity: %f"), HitComponent->GetComponentVelocity().Length(), OtherComp->GetComponentVelocity().Length());
 		Break();
+	}
+	
+	LastZPosition = HitComponent->GetComponentLocation().Z;
 }
 
 #if WITH_EDITOR
 void ABreakableObject::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	if (PropertyChangedEvent.Property->GetNameCPP() == "Mesh")
-		MeshComp->SetStaticMesh(Mesh);
-	
 	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	if (!PropertyChangedEvent.Property)
+		return;
+	
+	if (PropertyChangedEvent.Property->GetNameCPP() == "Mesh" && MeshComp)
+		MeshComp->SetStaticMesh(Mesh);
 }
 #endif
