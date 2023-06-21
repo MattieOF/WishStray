@@ -38,9 +38,11 @@ void ABreakableObject::Break()
 	if (bHasBroken)
 		return;
 
+	OnBroken.Broadcast();
+
 	if (BreakSound)
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), BreakSound, MeshComp->GetComponentLocation(), MeshComp->GetComponentRotation());
-
+	
 	GeoCollectionComp = Cast<UGeometryCollectionComponent>(
 		AddComponentByClass(UGeometryCollectionComponent::StaticClass(), false, FTransform::Identity, true));
 	GeoCollectionComp->SetRestCollection(GeoCollection);
@@ -49,7 +51,9 @@ void ABreakableObject::Break()
 
 	MeshComp->DestroyComponent();
 	RootComponent = GeoCollectionComp;
-	
+
+	PostOnBroken.Broadcast();
+
 	bHasBroken = true;
 }
 

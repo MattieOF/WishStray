@@ -10,6 +10,9 @@ class UOutlineComponent;
 class UGeometryCollection;
 class UGeometryCollectionComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBroken);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPostOnBroken);
+
 /**
  * An object that can be broken.
  */
@@ -68,6 +71,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int RequiredPuntLevel = 1;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnBroken OnBroken;
+
+	UPROPERTY(BlueprintAssignable)
+	FPostOnBroken PostOnBroken;
 
 private:
 	float LastZPosition;

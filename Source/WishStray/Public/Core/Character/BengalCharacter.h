@@ -42,7 +42,7 @@ public:
 	UCameraComponent* Camera;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Speed = 500;
+	float Speed = 800;
 
 	UPROPERTY()
 	ABreakableObject* HighlightedPuntable;
