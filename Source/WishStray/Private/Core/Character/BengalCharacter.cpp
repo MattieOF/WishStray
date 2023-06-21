@@ -2,9 +2,12 @@
 
 #include "Core/Character/BengalCharacter.h"
 
+#include "Core/BreakableObject.h"
+#include "Core/Character/BengalController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Visual/OutlineComponent.h"
 
 ABengalCharacter::ABengalCharacter()
 {
@@ -21,13 +24,38 @@ void ABengalCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (GetCharacterMovement()->GetCurrentAcceleration().SizeSquared() > KINDA_SMALL_NUMBER)
-	{
-		GetMesh()->SetWorldRotation(UKismetMathLibrary::RInterpTo_Constant(
+	// Tick punt timer
+	if (PuntTimer > 0)
+		PuntTimer -= DeltaSeconds;
+
+	// Orient to movement
+	if (GetCharacterMovement()->GetCurrentAcceleration().SizeSquared() > KINDA_SMALL_NUMBER && PuntTimer < 0.5)
+		TargetYaw = GetCharacterMovement()->GetCurrentAcceleration().GetSafeNormal().Rotation().Yaw - 90;
+	
+	GetMesh()->SetWorldRotation(UKismetMathLibrary::RInterpTo_Constant(
 			GetMesh()->GetComponentRotation(),
-			FRotator(0, GetCharacterMovement()->GetCurrentAcceleration().GetSafeNormal().Rotation().Yaw - 90, 0),
+			FRotator(0, TargetYaw, 0),
 			DeltaSeconds, 360));
-	}
+
+	// Check for puntables
+	FHitResult Hit;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	DrawDebugLine(GetWorld(), Camera->GetComponentLocation(), Camera->GetComponentLocation() + Camera->GetForwardVector() * 2000, FColor::Red);
+	if (BengalController->CanPunt() && GetWorld()->LineTraceSingleByChannel(Hit, Camera->GetComponentLocation(), Camera->GetComponentLocation() + Camera->GetForwardVector() * 2000, ECC_WorldStatic, QueryParams))
+	{
+		if (FVector::Dist(GetActorLocation(), Hit.ImpactPoint) > 400)
+		{
+			SetCurrentPuntable(nullptr);
+		} else
+		{
+			if (ABreakableObject* Breakable = Cast<ABreakableObject>(Hit.GetActor()))
+			{
+				SetCurrentPuntable(Breakable);
+				PuntableImpactPoint = Hit.ImpactPoint;
+			} else SetCurrentPuntable(nullptr);
+		}
+	} else SetCurrentPuntable(nullptr);
 }
 
 void ABengalCharacter::AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce)
@@ -54,4 +82,37 @@ void ABengalCharacter::AddCameraInput(float Vertical, float Horizontal)
 	Rot.Yaw += Horizontal * GetWorld()->DeltaRealTimeSeconds * 100;
 	Rot.Roll = 0;
 	CameraBoom->SetRelativeRotation(Rot);
+}
+
+void ABengalCharacter::SetCurrentPuntable(ABreakableObject* NewPuntable)
+{
+	if (HighlightedPuntable != nullptr)
+		HighlightedPuntable->OutlineComp->HideOutline();
+	HighlightedPuntable = NewPuntable;
+	if (HighlightedPuntable)
+		HighlightedPuntable->OutlineComp->ShowOutline();
+}
+
+void ABengalCharacter::DoPunt()
+{
+	if (HighlightedPuntable && PuntTimer <= 0 && !HighlightedPuntable->bHasBroken)
+	{
+		PuntTimer = 1;
+		const FVector Direction = (PuntableImpactPoint - GetActorLocation()).GetSafeNormal();
+		TargetYaw = Direction.Rotation().Yaw - 90;
+
+		if (HighlightedPuntable->RequiredPuntLevel <= PuntLevel)
+		{
+			if (HighlightedPuntable->bStartStatic)
+				HighlightedPuntable->Break();
+			else
+				HighlightedPuntable->MeshComp->AddImpulse(Direction * 300, NAME_None, true);
+		}
+	}
+}
+
+void ABengalCharacter::PossessedBy(AController* NewController)
+{
+	BengalController = Cast<ABengalController>(NewController);
+	Super::PossessedBy(NewController);
 }

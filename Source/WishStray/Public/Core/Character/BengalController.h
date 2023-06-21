@@ -31,6 +31,9 @@ public:
 
 	void OnBeginJump();
 	void OnEndJump();
+	void OnPunt();
+
+	FORCEINLINE bool CanPunt() { return !bJumping && !bChargingJump; }
 
 protected:
 	bool GetJumpToLocation(FVector& OutPos);

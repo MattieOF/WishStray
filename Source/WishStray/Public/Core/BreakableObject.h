@@ -6,6 +6,7 @@
 #include "UObject/Object.h"
 #include "BreakableObject.generated.h"
 
+class UOutlineComponent;
 class UGeometryCollection;
 class UGeometryCollectionComponent;
 
@@ -48,6 +49,9 @@ public:
 	UGeometryCollectionComponent* GeoCollectionComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UOutlineComponent* OutlineComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USoundBase* BreakSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -61,6 +65,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BreakAfterDistanceFallen = 1000000;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int RequiredPuntLevel = 1;
 
 private:
 	float LastZPosition;

@@ -105,6 +105,7 @@ void ABengalController::SetupInputComponent()
 	InputComponent->BindAxis("Scroll", this, &ABengalController::OnScroll);
 	InputComponent->BindAction("Jump", IE_Pressed, this, &ABengalController::OnBeginJump);
 	InputComponent->BindAction("Jump", IE_Released, this, &ABengalController::OnEndJump);
+	InputComponent->BindAction("Punt", IE_Pressed, this, &ABengalController::OnPunt);
 }
 
 void ABengalController::OnVerticalMovement(float Value)
@@ -212,6 +213,11 @@ void ABengalController::OnEndJump()
 			GetPawn()->SetActorEnableCollision(false);
 		}
 	}
+}
+
+void ABengalController::OnPunt()
+{
+	Cast<ABengalCharacter>(GetPawn())->DoPunt();
 }
 
 bool ABengalController::GetJumpToLocation(FVector& OutPos)

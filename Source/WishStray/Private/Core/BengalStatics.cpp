@@ -1,6 +1,6 @@
 ﻿// copyright lololol
 
-#include "BengalStatics.h"
+#include "Core/BengalStatics.h"
 
 #if WITH_EDITOR
 #include "Editor.h"

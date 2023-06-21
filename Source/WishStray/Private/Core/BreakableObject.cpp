@@ -5,23 +5,27 @@
 #include "WishStray.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Visual/OutlineComponent.h"
 
 ABreakableObject::ABreakableObject()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
 	MeshComp->SetNotifyRigidBodyCollision(true);
+	OutlineComp = CreateDefaultSubobject<UOutlineComponent>(TEXT("Outline"));
 	RootComponent = MeshComp;
 }
 
 void ABreakableObject::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	if (Mesh)
 		MeshComp->SetStaticMesh(Mesh);
 	MeshComp->SetUseCCD(!bStartStatic);
 	MeshComp->SetSimulatePhysics(!bStartStatic);
+	MeshComp->ComponentTags.Add("Outline");
+	OutlineComp->RefreshOutlinedComponents();
 	LastZPosition = MeshComp->GetComponentLocation().Z;
 	
 	FScriptDelegate MeshHitDelegate;

@@ -8,6 +8,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "BengalCharacter.generated.h"
 
+class ABengalController;
+class ABreakableObject;
+
 UCLASS()
 class WISHSTRAY_API ABengalCharacter : public ACharacter
 {
@@ -23,6 +26,14 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void AddCameraInput(float Vertical, float Horizontal);
+
+	UFUNCTION(BlueprintCallable)
+	void SetCurrentPuntable(ABreakableObject* NewPuntable);
+
+	UFUNCTION(BlueprintCallable)
+	void DoPunt();
+	
+	virtual void PossessedBy(AController* NewController) override;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USpringArmComponent* CameraBoom;
@@ -32,4 +43,26 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Speed = 500;
+
+	UPROPERTY()
+	ABreakableObject* HighlightedPuntable;
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector PuntableImpactPoint;
+
+	UPROPERTY(BlueprintReadWrite)
+	float Experience = 0;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int PuntLevel = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float PuntTimer = 0;
+	
+	UPROPERTY(BlueprintReadWrite)
+	float TargetYaw = 0;
+
+private:
+	UPROPERTY()
+	ABengalController* BengalController;
 };
