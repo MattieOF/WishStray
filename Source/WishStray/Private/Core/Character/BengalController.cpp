@@ -85,7 +85,8 @@ void ABengalController::Tick(float DeltaSeconds)
 		} else
 		{
 			GetPawn()->SetActorLocation(Spline->GetWorldLocationAtTime(JumpProgress));
-			FRotator Rot = Spline->GetWorldDirectionAtTime(JumpProgress).Rotation();
+			FRotator Rot = (Spline->GetWorldLocationAtSplinePoint(1) - GetPawn()->GetActorLocation()).GetSafeNormal().Rotation();
+			Rot.Roll = 0;
 			Rot.Yaw -= 90;
 			Cast<ABengalCharacter>(GetPawn())->GetMesh()->SetWorldRotation(Rot);
 		
