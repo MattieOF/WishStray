@@ -7,6 +7,7 @@
 
 ABreakableObject::ABreakableObject()
 {
+	PrimaryActorTick.bCanEverTick = true;
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
 	RootComponent = MeshComp;
 }
