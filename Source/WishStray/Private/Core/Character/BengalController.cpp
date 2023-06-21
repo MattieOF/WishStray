@@ -27,13 +27,13 @@ void ABengalController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (bChargingJump)
+	if (!bJumping && bChargingJump)
 	{
-		if (JumpCharge < 1)
-			JumpCharge = FMath::Min(JumpCharge + DeltaSeconds, 1);
+		// if (JumpCharge < 1)
+		// 	JumpCharge = FMath::Min(JumpCharge + DeltaSeconds, 1);
 		
 		// Recalculate jump
-		ABengalCharacter* Bengal = Cast<ABengalCharacter>(GetPawn());
+		const ABengalCharacter* Bengal = Cast<ABengalCharacter>(GetPawn());
 		if (!Bengal)
 		{
 			UE_LOG(LogBengal, Error, TEXT("What the fuck!! bengal is null"));
@@ -67,6 +67,27 @@ void ABengalController::Tick(float DeltaSeconds)
 	}
 	else
 		JumpCharge = 0;
+
+	if (bJumping)
+	{
+		if (JumpProgress >= Spline->Duration)
+		{
+			bJumping = false;
+			FRotator Rot = Cast<ABengalCharacter>(GetPawn())->GetMesh()->GetComponentRotation();
+			Rot.Roll = 0;
+			Rot.Pitch = 0;
+			Cast<ABengalCharacter>(GetPawn())->GetMesh()->SetWorldRotation(Rot);
+			GetPawn()->SetActorEnableCollision(true);
+		} else
+		{
+			GetPawn()->SetActorLocation(Spline->GetWorldLocationAtTime(JumpProgress));
+			FRotator Rot = Spline->GetWorldDirectionAtTime(JumpProgress).Rotation();
+			Rot.Yaw -= 90;
+			Cast<ABengalCharacter>(GetPawn())->GetMesh()->SetWorldRotation(Rot);
+		
+			JumpProgress += DeltaSeconds;
+		}
+	}
 }
 
 void ABengalController::SetupInputComponent()
@@ -91,7 +112,7 @@ void ABengalController::OnVerticalMovement(float Value)
 		JumpPosOffset += (Forward.GetSafeNormal() * GetWorld()->DeltaRealTimeSeconds * Value * 1000);
 		JumpPosOffset = JumpPosOffset.GetClampedToMaxSize(700);
 	}
-	else
+	else if (!bJumping)
 		GetPawn()->AddMovementInput(FVector::ForwardVector, Value);
 }
 
@@ -104,7 +125,7 @@ void ABengalController::OnHorizontalMovement(float Value)
 		JumpPosOffset += (Right.GetSafeNormal() * GetWorld()->DeltaRealTimeSeconds * Value * 1000);
 		JumpPosOffset = JumpPosOffset.GetClampedToMaxSize(700);
 	}
-	else
+	else if (!bJumping)
 		GetPawn()->AddMovementInput(FVector::RightVector, Value);
 }
 
@@ -128,6 +149,9 @@ void ABengalController::OnScroll(float Value)
 
 void ABengalController::OnBeginJump()
 {
+	if (bJumping || bChargingJump)
+		return;
+	
 	JumpPosOffset = FVector::ZeroVector;
 	bChargingJump = true;
 	PawPrint->SetVisible(true);
@@ -135,6 +159,9 @@ void ABengalController::OnBeginJump()
 
 void ABengalController::OnEndJump()
 {
+	if (!bChargingJump)
+		return;
+	
 	bChargingJump = false;
 	PawPrint->SetVisible(false);
 
@@ -156,23 +183,29 @@ void ABengalController::OnEndJump()
 		FVector ReverseDir = -Dir;
 		Spline->SetTangentAtSplinePoint(0, Dir, ESplineCoordinateSpace::World);
 		Spline->SetTangentAtSplinePoint(1, ReverseDir, ESplineCoordinateSpace::World);
-		int Tries = 5;
+		int Tries = 6;
 
 		TArray<AActor*> Ignored;
 		Ignored.Add(GetPawn());
-		while (Tries > 0 && UBengalStatics::CheckForCollisionsAlongSpline(Spline, ECC_WorldStatic, Ignored))
+		do
 		{
 			Tries--;
 
-			Dir = FVector(Dir.X * 1.3, Dir.Y * 1.3, (Dir.Z + 15) * 2);
+			Dir = FVector(Dir.X * 1.5, Dir.Y * 1.5, (Dir.Z + 50) * 3);
 			Spline->SetTangentAtSplinePoint(0, Dir, ESplineCoordinateSpace::World);
 			ReverseDir = Spline->GetTangentAtSplinePoint(0, ESplineCoordinateSpace::World);
 			ReverseDir.Z = -ReverseDir.Z;
 			Spline->SetTangentAtSplinePoint(1, ReverseDir, ESplineCoordinateSpace::World);
-		}
+		} while (Tries > 0 && UBengalStatics::CheckForCollisionsAlongSpline(Spline, ECC_WorldStatic, Ignored));
 
-		if (Tries <= 0)
-			UE_LOG(LogBengal, Log, TEXT("Used all tries"));
+		if (!UBengalStatics::CheckForCollisionsAlongSpline(Spline, ECC_WorldStatic, Ignored))
+		{
+			// We found a path, let's use it
+			JumpProgress = 0;
+			Spline->Duration = Spline->GetSplineLength() / 1000;
+			bJumping = true;
+			GetPawn()->SetActorEnableCollision(false);
+		}
 	}
 }
 

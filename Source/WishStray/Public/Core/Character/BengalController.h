@@ -39,6 +39,12 @@ protected:
 	bool bChargingJump = false;
 
 	UPROPERTY(BlueprintReadOnly)
+	bool bJumping = false;
+
+	UPROPERTY(BlueprintReadOnly)
+	float JumpProgress = 0;
+
+	UPROPERTY(BlueprintReadOnly)
 	float JumpCharge = 0;
 
 	UPROPERTY()

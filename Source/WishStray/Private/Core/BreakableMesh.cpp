@@ -79,7 +79,6 @@ void ABreakableMesh::OnMeshHit(UPrimitiveComponent* HitComponent, AActor* OtherA
 	float Radius = Mesh->Bounds.SphereRadius;
 	MF->ProcessEvent(MF->FindFunction(TEXT("SetRadius")), &Radius);
 	MF->SetLifeSpan(0.05f);
-	
 	bHasBroken = true;
 	
 	Mesh->DestroyComponent();
