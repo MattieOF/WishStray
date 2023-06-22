@@ -2,10 +2,12 @@
 
 #include "Core/Character/BengalCharacter.h"
 
+#include "Core/BengalGameInstance.h"
 #include "Core/BreakableObject.h"
 #include "Core/Character/BengalController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Visual/OutlineComponent.h"
 
@@ -109,6 +111,40 @@ void ABengalCharacter::DoPunt()
 				HighlightedPuntable->MeshComp->AddImpulse(Direction * 300, NAME_None, true);
 		}
 	}
+}
+
+void ABengalCharacter::GiveXP(float Amount)
+{
+	UBengalGameInstance* BengalGI = Cast<UBengalGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	float NextLevelXP = BengalGI->ExperienceLevels[FMath::Clamp(PuntLevel - 1, 0, BengalGI->ExperienceLevels.Num() - 1)];
+	float Needed = NextLevelXP - Experience;
+
+	if (Amount < Needed)
+		Experience += Amount;
+	else
+	{
+		while (Amount > 0)
+		{
+			NextLevelXP = BengalGI->ExperienceLevels[FMath::Clamp(PuntLevel - 1, 0, BengalGI->ExperienceLevels.Num() - 1)];
+			float XPUsed = FMath::Min(NextLevelXP, Amount);
+			Amount -= XPUsed;
+			AddPuntLevel();
+			
+			if (Amount <= 0)
+			{
+				Experience = XPUsed;
+				Amount = 0;
+			}
+		}
+	}
+	
+	Experience += Amount;
+}
+
+void ABengalCharacter::AddPuntLevel()
+{
+	// TODO: UI
+	PuntLevel++;
 }
 
 void ABengalCharacter::PossessedBy(AController* NewController)

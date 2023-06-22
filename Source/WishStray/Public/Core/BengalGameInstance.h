@@ -17,4 +17,7 @@ class WISHSTRAY_API UBengalGameInstance : public UGameInstance
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AActor> MasterFieldActorClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<float> ExperienceLevels;
 };

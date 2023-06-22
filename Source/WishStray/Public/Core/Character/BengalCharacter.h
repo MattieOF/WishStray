@@ -32,6 +32,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void DoPunt();
+
+	UFUNCTION(BlueprintCallable)
+	void GiveXP(float Amount);
+
+	UFUNCTION(BlueprintCallable)
+	void AddPuntLevel();
 	
 	virtual void PossessedBy(AController* NewController) override;
 	

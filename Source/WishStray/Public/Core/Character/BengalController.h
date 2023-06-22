@@ -9,6 +9,17 @@
 class USplineComponent;
 class APawPrint;
 
+USTRUCT()
+struct FFadingMusic
+{
+	GENERATED_BODY()
+	
+	UPROPERTY()
+	UAudioComponent* AudioComponent;
+	UPROPERTY()
+	float RemainingTime = 0;
+};
+
 UCLASS()
 class WISHSTRAY_API ABengalController : public APlayerController
 {
@@ -35,9 +46,15 @@ public:
 
 	FORCEINLINE bool CanPunt() { return !bJumping && !bChargingJump; }
 
+	UFUNCTION(BlueprintCallable)
+	void PlayMusic(USoundWave* NewMusic);
+
+	UPROPERTY(EditAnywhere)
+	float JumpSpeed = 1500;
+	
 protected:
 	bool GetJumpToLocation(FVector& OutPos);
-	
+
 	UPROPERTY(BlueprintReadOnly)
 	bool bChargingJump = false;
 
@@ -61,4 +78,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	USplineComponent* Spline;
+	
+	UPROPERTY()
+	TArray<FFadingMusic> FadingMusic;
+	
+	UPROPERTY()
+	UAudioComponent* CurrentMusic;
 };

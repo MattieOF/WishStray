@@ -58,6 +58,12 @@ public:
 	USoundBase* BreakSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector2D SoundCount = FVector2D(1, 1);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector2D SoundDelayRange = FVector2D(0, 0);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bHasBroken = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -71,6 +77,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int RequiredPuntLevel = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float XPWorth = 0.15f;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnBroken OnBroken;

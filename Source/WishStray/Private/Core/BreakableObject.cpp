@@ -3,6 +3,8 @@
 #include "Core/BreakableObject.h"
 
 #include "WishStray.h"
+#include "Core/BengalGameMode.h"
+#include "Core/Character/BengalCharacter.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Visual/OutlineComponent.h"
@@ -40,11 +42,18 @@ void ABreakableObject::Break()
 
 	OnBroken.Broadcast();
 
+	Cast<ABengalCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0))->GiveXP(XPWorth);
+
 	if (BreakSound)
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), BreakSound, MeshComp->GetComponentLocation(), MeshComp->GetComponentRotation());
+	{
+		Cast<ABengalGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->AddBreakSounds(
+			FMath::RandRange(static_cast<int>(SoundCount.X), static_cast<int>(SoundCount.Y)),
+			SoundDelayRange.X, SoundDelayRange.Y, BreakSound,
+			GetActorLocation());
+	}
 	
 	GeoCollectionComp = Cast<UGeometryCollectionComponent>(
-		AddComponentByClass(UGeometryCollectionComponent::StaticClass(), false, FTransform::Identity, true));
+		AddComponentByClass(UGeometryCollectionComponent::StaticClass(), false, FTransform(MeshComp->GetRelativeRotation(), FVector::ZeroVector, MeshComp->GetRelativeScale3D()), true));
 	GeoCollectionComp->SetRestCollection(GeoCollection);
 	FinishAddComponent(GeoCollectionComp, false, FTransform::Identity);
 	GeoCollectionComp->CrumbleActiveClusters();
@@ -64,7 +73,7 @@ void ABreakableObject::OnMeshHit(UPrimitiveComponent* HitComponent, AActor* Othe
 		|| (HitComponent->HasValidPhysicsState() && HitComponent->GetComponentVelocity().Length() >= BreakSpeed)
 		|| (OtherComp && OtherComp->GetComponentVelocity().Length() >= BreakSpeed))
 	{
-		UE_LOG(LogBengal, Log, TEXT("Breakable object broken: this velocity: %f, collider velocity: %f"), HitComponent->GetComponentVelocity().Length(), OtherComp->GetComponentVelocity().Length());
+		UE_LOG(LogBengal, Log, TEXT("Breakable object broken: this velocity: %f, collider velocity: %f"), HitComponent->GetComponentVelocity().Length(), OtherComp ? OtherComp->GetComponentVelocity().Length() : 0);
 		Break();
 	}
 	

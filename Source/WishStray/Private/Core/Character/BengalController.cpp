@@ -4,10 +4,12 @@
 #include "Core/Character/BengalController.h"
 
 #include "WishStray.h"
+#include "Components/AudioComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/SplineComponent.h"
 #include "Core/BengalStatics.h"
 #include "Core/Character/BengalCharacter.h"
+#include "Sound/SoundWave.h"
 #include "Visual/PawPrint.h"
 
 ABengalController::ABengalController()
@@ -28,6 +30,17 @@ void ABengalController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	// Check for music
+	for (int i = FadingMusic.Num(); i--;)
+	{
+		FadingMusic[i].RemainingTime -= DeltaSeconds;
+		if (FadingMusic[i].RemainingTime <= 0)
+		{
+			FadingMusic[i].AudioComponent->DestroyComponent();
+			FadingMusic.RemoveAt(i);
+		}
+	}
+	
 	if (!bJumping && bChargingJump)
 	{
 		// if (JumpCharge < 1)
@@ -209,7 +222,7 @@ void ABengalController::OnEndJump()
 		{
 			// We found a path, let's use it
 			JumpProgress = 0;
-			Spline->Duration = Spline->GetSplineLength() / 1000;
+			Spline->Duration = Spline->GetSplineLength() / JumpSpeed;
 			bJumping = true;
 			GetPawn()->SetActorEnableCollision(false);
 		}
@@ -219,6 +232,22 @@ void ABengalController::OnEndJump()
 void ABengalController::OnPunt()
 {
 	Cast<ABengalCharacter>(GetPawn())->DoPunt();
+}
+
+void ABengalController::PlayMusic(USoundWave* NewMusic)
+{
+	if (CurrentMusic)
+	{
+		CurrentMusic->FadeOut(1.5f, 0);
+		FadingMusic.Add({CurrentMusic, 1.5f});
+	}
+
+	CurrentMusic = Cast<UAudioComponent>(AddComponentByClass(UAudioComponent::StaticClass(), false, FTransform(), false));
+	CurrentMusic->bIsUISound = true;
+	CurrentMusic->SetSound(NewMusic);
+	CurrentMusic->bAllowSpatialization = false;
+	CurrentMusic->Play();
+	CurrentMusic->FadeIn(1.3f);
 }
 
 bool ABengalController::GetJumpToLocation(FVector& OutPos)
