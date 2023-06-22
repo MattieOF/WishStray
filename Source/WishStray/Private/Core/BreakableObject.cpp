@@ -55,6 +55,7 @@ void ABreakableObject::Break()
 	GeoCollectionComp = Cast<UGeometryCollectionComponent>(
 		AddComponentByClass(UGeometryCollectionComponent::StaticClass(), false, FTransform(MeshComp->GetRelativeRotation(), FVector::ZeroVector, MeshComp->GetRelativeScale3D()), true));
 	GeoCollectionComp->SetRestCollection(GeoCollection);
+	GeoCollectionComp->SetCanEverAffectNavigation(false);
 	FinishAddComponent(GeoCollectionComp, false, FTransform::Identity);
 	GeoCollectionComp->CrumbleActiveClusters();
 

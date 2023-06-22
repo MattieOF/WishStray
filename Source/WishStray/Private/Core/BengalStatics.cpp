@@ -174,11 +174,11 @@ bool UBengalStatics::CheckForCollisionsAlongSpline(USplineComponent* Spline, ECo
 		FVector Loc = Spline->GetLocationAtDistanceAlongSpline(Dist, ESplineCoordinateSpace::World);
 		if (World->OverlapBlockingTestByChannel(Loc, FQuat::Identity, Channel, Shape, QueryParams))
 		{
-			DrawDebugSphere(World, Loc, 12, 6, FColor::Red, false, 2, 0, 3);
+			// DrawDebugSphere(World, Loc, 12, 6, FColor::Red, false, 2, 0, 3);
 			return true;
 		}
 		else
-			DrawDebugSphere(World, Loc, 12, 6, FColor::Green, false, 2, 0, 3);
+			// DrawDebugSphere(World, Loc, 12, 6, FColor::Green, false, 2, 0, 3);
 
 		Dist += Resolution;
 	}
