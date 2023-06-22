@@ -58,6 +58,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	float Experience = 0;
+
+	UPROPERTY(BlueprintReadWrite)
+	float TotalExperience = 0;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int PuntLevel = 1;

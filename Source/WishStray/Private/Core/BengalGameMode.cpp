@@ -2,6 +2,7 @@
 
 #include "Core/BengalGameMode.h"
 
+#include "Core/BreakableObject.h"
 #include "Core/Character/BengalController.h"
 #include "Core/Character/BengalCharacter.h"
 #include "Kismet/GameplayStatics.h"
@@ -18,6 +19,14 @@ void ABengalGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if (TotalItemWeight == 0)
+	{
+		TArray<AActor*> Breakables;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABreakableObject::StaticClass(), Breakables);
+		for (AActor* Breakable : Breakables)
+			TotalItemWeight += Cast<ABreakableObject>(Breakable)->XPWorth;
+	}
+	
 	for (int i = BreakSoundQueue.Num() - 1; i >= 0; i--)
 	{
 		BreakSoundQueue[i].TimeUntilPlayed -= DeltaSeconds;

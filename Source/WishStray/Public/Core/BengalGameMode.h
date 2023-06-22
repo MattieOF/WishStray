@@ -30,6 +30,13 @@ public:
 	void AddBreakSound(FBreakSoundQueueEntry SoundQueueEntry);
 	void AddBreakSound(float MinTime, float MaxTime, USoundBase* Sound, FVector Location);
 	void AddBreakSounds(int Count, float MinTime, float MaxTime, USoundBase* Sound, FVector Location);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FORCEINLINE float GetTotalItemWeight() { return TotalItemWeight; }
+
+protected:
+	UPROPERTY(BlueprintReadOnly)
+	float TotalItemWeight;
 	
 private:
 	TArray<FBreakSoundQueueEntry> BreakSoundQueue;

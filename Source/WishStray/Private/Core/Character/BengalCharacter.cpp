@@ -119,6 +119,8 @@ void ABengalCharacter::GiveXP(float Amount)
 	float NextLevelXP = BengalGI->ExperienceLevels[FMath::Clamp(PuntLevel - 1, 0, BengalGI->ExperienceLevels.Num() - 1)];
 	float Needed = NextLevelXP - Experience;
 
+	TotalExperience += Amount;
+	
 	if (Amount < Needed)
 		Experience += Amount;
 	else
