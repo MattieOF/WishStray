@@ -8,7 +8,7 @@ public class WishStray : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "GeometryCollectionEngine", "ChaosSolverEngine" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "GeometryCollectionEngine", "ChaosSolverEngine", "UMG" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 		

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blueprint/UserWidget.h"
 #include "GameFramework/GameModeBase.h"
 #include "BengalGameMode.generated.h"
 
@@ -12,6 +13,16 @@ struct FBreakSoundQueueEntry
 	float TimeUntilPlayed;
 	USoundBase* Sound;
 	FVector Location;
+};
+
+UCLASS(Blueprintable)
+class UNotificationPanel : public UUserWidget
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void AddNotification(const FText& Title, const FText& Content, float Time = 5, UTexture2D* Icon = nullptr);
 };
 
 /**
@@ -25,6 +36,7 @@ class WISHSTRAY_API ABengalGameMode : public AGameModeBase
 public:
 	ABengalGameMode();
 
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 	
 	void AddBreakSound(FBreakSoundQueueEntry SoundQueueEntry);
@@ -33,6 +45,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FORCEINLINE float GetTotalItemWeight() { return TotalItemWeight; }
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UNotificationPanel> NotificationsWidgetClass;
+	
+	UPROPERTY(BlueprintReadOnly)
+	UNotificationPanel* NotificationPanel;
 
 protected:
 	UPROPERTY(BlueprintReadOnly)

@@ -3,6 +3,7 @@
 #include "Core/Character/BengalCharacter.h"
 
 #include "Core/BengalGameInstance.h"
+#include "Core/BengalGameMode.h"
 #include "Core/BreakableObject.h"
 #include "Core/Character/BengalController.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -109,6 +110,9 @@ void ABengalCharacter::DoPunt()
 				HighlightedPuntable->Break();
 			else
 				HighlightedPuntable->MeshComp->AddImpulse(Direction * 300, NAME_None, true);
+		} else
+		{
+			Cast<ABengalGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->NotificationPanel->AddNotification(FText::FromString("Not powerful enough :("), FText::FromString("Level up your cat slap power by breaking things to break this!"), 3);
 		}
 	}
 }

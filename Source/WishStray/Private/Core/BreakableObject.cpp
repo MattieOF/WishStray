@@ -57,6 +57,7 @@ void ABreakableObject::Break()
 	GeoCollectionComp->SetRestCollection(GeoCollection);
 	GeoCollectionComp->SetCanEverAffectNavigation(false);
 	GeoCollectionComp->CanCharacterStepUpOn = ECB_No;
+	GeoCollectionComp->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	FinishAddComponent(GeoCollectionComp, false, FTransform::Identity);
 	GeoCollectionComp->CrumbleActiveClusters();
 

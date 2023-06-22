@@ -2,6 +2,7 @@
 
 #include "Core/BengalGameMode.h"
 
+#include "WishStray.h"
 #include "Core/BreakableObject.h"
 #include "Core/Character/BengalController.h"
 #include "Core/Character/BengalCharacter.h"
@@ -13,6 +14,18 @@ ABengalGameMode::ABengalGameMode()
 	
 	DefaultPawnClass      = ABengalCharacter::StaticClass();
 	PlayerControllerClass = ABengalController::StaticClass();
+}
+
+void ABengalGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+	NotificationPanel = CreateWidget<UNotificationPanel>(GetWorld(), NotificationsWidgetClass);
+	if (!NotificationPanel)
+	{
+    	UE_LOG(LogBengal, Error, TEXT("Failed to create notification panel!"));
+	}
+	else
+    	NotificationPanel->AddToViewport();
 }
 
 void ABengalGameMode::Tick(float DeltaSeconds)
